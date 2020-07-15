@@ -77,8 +77,28 @@ export default {
 
   data() {
     return {
-      asset: {}
+      asset: {},
+      history: []
     };
+  },
+
+  computed: {
+    min() {
+      return Math.min(
+        ...this.history.map((h) => parseFloat(h.priceUsd).toFixed(2))
+      );
+    },
+    max() {
+      return Math.max(
+        ...this.history.map((h) => parseFloat(h.priceUsd).toFixed(2))
+      );
+    },
+    avg() {
+      return (
+        this.history.reduce((a, b) => a + parseFloat(b.priceUsd), 0) /
+        this.history.length
+      );
+    }
   },
 
   created() {
@@ -88,7 +108,12 @@ export default {
   methods: {
     getCoin() {
       const id = this.$route.params.id;
-      api.getAsset(id).then((asset) => (this.asset = asset));
+      Promise.all([api.getAsset(id), api.getAssetHistory(id)]).then(
+        ([asset, history]) => {
+          this.asset = asset;
+          this.history = history;
+        }
+      );
     }
   }
 };
